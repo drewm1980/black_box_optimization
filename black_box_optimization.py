@@ -112,6 +112,12 @@ def _str(graph,point):
     entries = (name + '=' + str(param) for name, param in zip(names, point))
     return '\t'.join(entries)
 
+def graph_node_to_dict(graph, node):
+    '''Convenience function for converting a graph node to a dict. 
+        This is useful if you need to stick use your parameter list to call a function
+        using named parameters. Often the function is a class instantiator.'''
+    names = graph.name.split(parameterNameSeparator)
+    return dict(zip(names, node))
 
 def best_neighbor_descent(graph, objective, seed=None):
     '''

@@ -5,6 +5,7 @@ import scipy
 import networkx
 import functools
 
+#from black_box_optimization import black_box_optimization
 from black_box_optimization import *
 
 
@@ -50,6 +51,13 @@ def toy_grid_search_problem():
     optimum = (0,0,0)
     return grid, f, seed, optimum
 
+
+def test_graph_node_to_dict():
+    grid,f,seed,optimum = toy_grid_search_problem()
+    d = graph_node_to_dict(grid, seed)
+    assert d=={'x':seed[0],'y':seed[1],'z':seed[2]}
+
+
 def test_best_neighbor_descent():
     grid,f,seed,optimum = toy_grid_search_problem()
     stopPoint = best_neighbor_descent(grid, f, seed)
@@ -70,4 +78,5 @@ if __name__ == '__main__':
     #test_flattening()
     #test_best_neighbor_descent()
     #test_exhaustive_search()
-    test_greedy_neighbor_descent()
+    #test_greedy_neighbor_descent()
+    test_graph_node_to_dict()
