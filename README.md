@@ -19,3 +19,12 @@ The code is pure python 3 and depends on only on the networkx graph library.
 It was developed at Robovision as part of a multiple view stereo benchmark, located at:
 
 https://github.com/drewm1980/multi_view_stereo_benchmark
+
+## Status
+
+This code is still very experimental; at the time of writing I am not even calling it from my own code yet. Don't assume it works just becaues my handful of tests pass.
+
+## Licensing
+
+The code for the benchmark itself is developed commercially by Robovision Integrated Solutons NV, and shared under the MIT license. See LICENSE.txt for the standard details. We shared it online to simplify some of our collaborations with partners. If you use it and like it, tell everyone how awesome we are. If you use it and hate it, tell nobody!
+
