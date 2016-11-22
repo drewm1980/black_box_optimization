@@ -17,74 +17,90 @@ from networkx import Graph
 parameterNameSeparator = ','
 
 
-def sequence(parameterValues, parameterName):
+def _sequence_graph(parameterValues):
     '''Convert a list of values to a graph that connects adgacent values'''
     graph = Graph()
-
-    # Handle trivial cases
-    l = list(parameterValues)
-    if len(l)==1:
-        graph.add_node(parameterValues[0])
-        return graph
-    if len(l)==0:
-        return graph
-
+    graph.add_nodes_from(parameterValues)
     graph.add_path(parameterValues)
-    graph.name = parameterName
+    assert len(graph.nodes())>0, "Generated an empty graph. Is parameterValues empty?"
     return graph
 
-def cycle(parameterValues, parameterName):
+def _cycle_graph(parameterValues):
     '''Convert a list of values to a graph that connects adgacent values with wraparound'''
     graph = Graph()
-    l = list(parameterValues)
-
-    # Handle trivial cases
-    if len(l)==1:
-        graph.add_node(parameterValues[0])
-        return graph
-    if len(l)==0:
-        return graph
-
     graph.add_cycle(parameterValues)
-    graph.name = parameterName
+    assert len(graph.nodes())>0, "Generated an empty graph. Is parameterValues empty?"
     return graph
 
-def complete(parameterValues, parameterName):
-    ''' Convert a list of parameter values to a graph that connects all values to each other.
-    Appropriate for options that are like enums and have no meaningful adgacency'''
-    l = list(parameterValues)
-
-    # Handle trivial cases
-    if len(l)==1:
-        graph = Graph()
-        graph.add_node(parameterValues[0])
-        return graph
-    if len(l)==0:
-        graph = Graph()
-        return graph
-
+def _complete_graph(parameterValues):
     graph = networkx.complete_graph(len(parameterValues))
-    graph.name = parameterName
     networkx.relabel_nodes(graph,mapping=dict(zip(graph,parameterValues),copy=False))
+    assert len(graph.nodes())>0, "Generated an empty graph. Is parameterValues empty?"
     return graph
+
+def _wrap_graph_generator(f):
+    # Wrap a graph generator with handling of trivial cases and names
+    def f_wrapped(parameterValues, parameterName):
+        l = list(parameterValues)
+        assert len(l) > 0, "Empty graphs not supported!"
+
+        # Handle trivial cases
+        if len(l)==1:
+            graph = Graph()
+            graph.add_node(parameterValues[0])
+            graph.name = parameterName
+            return graph
+        graph = f(parameterValues)
+        graph.name = parameterName
+        return graph
+    return f_wrapped
+
+cycle = _wrap_graph_generator(_cycle_graph)
+cycle.__doc__='''Convert a list of values to a graph that connects adgacent values'''
+
+sequence = _wrap_graph_generator(_sequence_graph)
+sequence.__doc__='''Convert a list of values to a graph that connects adgacent values'''
+
+complete = _wrap_graph_generator(_complete_graph)
+complete.__doc__=''' Convert a list of parameter values to a graph that connects all values to each other. Appropriate for options that are like enums and have no meaningful adgacency'''
 
 
 def _flatten_tuples_in_product_graph(graph):
     ''' Do one level of tuple flattening in the node names of a graph IN PLACE '''
-    flatten_tuple = lambda t: (t[0][0],t[0][1],t[1])
+    flatten_left_tuple = lambda t: (t[0][0],t[0][1],t[1])
     oldNodeLabels = graph.nodes()
-    if type(oldNodeLabels[0]) is tuple and type(oldNodeLabels[0][0]) is tuple:
-        newNodeLabels = map(flatten_tuple,oldNodeLabels)
+    assert type(oldNodeLabels) is list
+    assert len(oldNodeLabels)>0, 'Bug: Empty graphs not supported'
+    assert type(oldNodeLabels[0]) is tuple, "Bug: Product graph contains "+str(type(oldNodeLabels[0]))+", but expected tuples!"
+    if type(oldNodeLabels[0][0]) is tuple: # First node, left side
+        newNodeLabels = map(flatten_left_tuple,oldNodeLabels)
         networkx.relabel_nodes(graph,mapping=dict(zip(oldNodeLabels,newNodeLabels)),copy=False)
 
 def _extend_product_function_to_multiple_graphs(productFunction):
+    # Product function takes two graphs and returns a graph
     def product_of_multiple_graphs(graphs):
+        assert type(graphs) in (list,tuple)
+        assert len(graphs)>1, 'Need at least two graphs to take a product!'
+        #print(list((g.name for g in graphs))) # debugging
+        assert all((g.name != '' for g in graphs))
+        assert all((len(g.nodes())>0 for g in graphs)), "Empty graphs not supported!"
+
         def product_with_flattening(g1,g2):
-            graph = networkx.cartesian_product(g1,g2)
+            assert g1.name != ''
+            assert g2.name != ''
+            #print(list((g.name for g in (g1,g2)))) # debugging
+
+            assert len(g1.nodes())>0, "Empty graphs not supported!"
+            assert len(g2.nodes())>0, "Empty graphs not supported!"
+            graph = productFunction(g1,g2)
+            assert len(graph.nodes())>0, "Empty graphs not supported!"
             _flatten_tuples_in_product_graph(graph)
+            graph.name = parameterNameSeparator.join((g.name for g in (g1,g2)))
             return graph
+
         graph = functools.reduce(product_with_flattening, graphs)
-        graph.name = parameterNameSeparator.join((g.name for g in graphs))
+        #print(list((g.name for g in graphs))) # debugging
+
         return graph
     return product_of_multiple_graphs
 
@@ -185,6 +201,3 @@ def exhaustive_search(graph, objective):
     assert globalMinimum is not None, 'Global minimum not found. Did you pass an empty graph?'
     print('A global minimum is:\t',_str(graph,globalMinimum), '\tobjective=',value)
     return globalMinimum
-
-
-

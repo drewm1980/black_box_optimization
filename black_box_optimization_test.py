@@ -8,25 +8,31 @@ import functools
 #from black_box_optimization import black_box_optimization
 from black_box_optimization import *
 
-
-def test_flattening():
-    xgrid = sequence([0], 'x')
-    ygrid = sequence(range(1), 'y')
-    zgrid = sequence(range(1), 'z')
-    graph = cartesian_product((xgrid, ygrid, zgrid))
-    assert (0, 0, 0) in graph.nodes()
-
-
 def test_make_a_sequence():
-    sequence([1, 2, 3], 'foo')
+    g = sequence([1, 2, 3], 'foo')
+    assert len(g.nodes()) == 3
+    assert g.name == 'foo'
 
 
 def test_make_a_cycle():
-    cycle([1, 2, 3], 'bar')
+    g = cycle([1, 2, 3], 'bar')
+    assert len(g.nodes()) == 3
+    assert g.name == 'bar'
 
 
 def test_complete():
-    complete([1, 2, 3], 'baz')
+    g = complete([1, 2, 3], 'baz')
+    assert len(g.nodes()) == 3
+    assert g.name == 'baz'
+
+
+def test_flattening():
+    xgrid = sequence([0], 'x')
+    ygrid = sequence([0], 'y')
+    zgrid = sequence([0], 'z')
+    graph = cartesian_product((xgrid, ygrid, zgrid))
+    assert len(graph.nodes()) > 0, 'cartesian_product returned an empty graph!'
+    assert (0, 0, 0) in graph.nodes()
 
 
 def test_make_cartesian_product():
@@ -36,6 +42,33 @@ def test_make_cartesian_product():
     assert p.number_of_nodes() == 9
     print(p.number_of_edges())
 
+def test_product_with_a_scalar_graph1():
+    foo = sequence([1, 3, 5], 'foo')
+    bar = sequence([2], 'bar')
+    assert all((g.name != '' for g in [foo,bar]))
+    p = cartesian_product([foo,bar])
+    assert p.name == 'foo,bar'
+
+def test_product_with_a_scalar_graph2():
+    foo = sequence([1, 3, 5], 'foo')
+    bar = sequence([2], 'bar')
+    p = cartesian_product([bar,foo])
+    assert p.name == 'bar,foo'
+
+def test_product_with_a_scalar_graph3():
+    foo = sequence([1, 3, 5], 'foo')
+    bar = sequence([2], 'bar')
+    p = strong_product([bar,foo])
+    assert p.name == 'bar,foo'
+
+def test_product_with_more_than_two_graphs():
+    foo = sequence([1, 3], 'foo')
+    bar = sequence([2, 4], 'bar')
+    baz = sequence([10, 20], 'baz')
+
+    p = cartesian_product([foo, bar, baz])
+    assert p.name == 'foo,bar,baz'
+    assert (1,2,10) in p
 
 def toy_grid_search_problem():
     @functools.lru_cache(maxsize=None)
@@ -75,8 +108,11 @@ def test_exhaustive_search():
     assert stopPoint == optimum
 
 if __name__ == '__main__':
+    # By default, run whatever test I'm currently working on fixing up.
+    test_make_cartesian_product()
     #test_flattening()
     #test_best_neighbor_descent()
     #test_exhaustive_search()
     #test_greedy_neighbor_descent()
-    test_graph_node_to_dict()
+    #test_graph_node_to_dict()
+    #test_product_with_a_scalar_graph()
