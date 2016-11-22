@@ -67,13 +67,17 @@ complete.__doc__=''' Convert a list of parameter values to a graph that connects
 
 def _flatten_tuples_in_product_graph(graph):
     ''' Do one level of tuple flattening in the node names of a graph IN PLACE '''
-    flatten_left_tuple = lambda t: (t[0][0],t[0][1],t[1])
+    def flatten_tuple_one_level(t):
+        assert type(t) is tuple
+        assert len(t)==2
+        return tuple(t[0]) + (t[1], )
+
     oldNodeLabels = graph.nodes()
     assert type(oldNodeLabels) is list
     assert len(oldNodeLabels)>0, 'Bug: Empty graphs not supported'
     assert type(oldNodeLabels[0]) is tuple, "Bug: Product graph contains "+str(type(oldNodeLabels[0]))+", but expected tuples!"
     if type(oldNodeLabels[0][0]) is tuple: # First node, left side
-        newNodeLabels = map(flatten_left_tuple,oldNodeLabels)
+        newNodeLabels = map(flatten_tuple_one_level,oldNodeLabels)
         networkx.relabel_nodes(graph,mapping=dict(zip(oldNodeLabels,newNodeLabels)),copy=False)
 
 def _extend_product_function_to_multiple_graphs(productFunction):

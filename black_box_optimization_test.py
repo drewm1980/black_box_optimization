@@ -65,10 +65,36 @@ def test_product_with_more_than_two_graphs():
     foo = sequence([1, 3], 'foo')
     bar = sequence([2, 4], 'bar')
     baz = sequence([10, 20], 'baz')
-
     p = cartesian_product([foo, bar, baz])
     assert p.name == 'foo,bar,baz'
     assert (1,2,10) in p
+
+def test_product_with_mixed_types():
+    foo = sequence([1, 3], 'foo')
+    bar = sequence([2.0, 4.0], 'bar')
+    baz = sequence(['a', 'b'], 'baz')
+    p = cartesian_product([foo, bar, baz])
+    assert p.name == 'foo,bar,baz'
+    assert (1,4.0,'a') in p
+    assert (3,4.0,'a') in p
+
+
+def test_product_with_none():
+    foo = sequence([1, 3], 'foo')
+    bar = sequence([None], 'bar')
+    baz = sequence([2, 4], 'baz')
+    p = cartesian_product([foo, bar, baz])
+    assert p.name == 'foo,bar,baz'
+    assert (1,None,2) in p
+    assert (3,None,4) in p
+
+
+def test_product_with_long_list():
+    listLength = 8
+    l = [sequence([1,2],'foo')]*listLength
+    p = cartesian_product(l)
+    assert tuple([2]*listLength) in p
+    
 
 def toy_grid_search_problem():
     @functools.lru_cache(maxsize=None)
@@ -113,8 +139,9 @@ if __name__ == '__main__':
     #test_flattening()
     #test_best_neighbor_descent()
     #test_exhaustive_search()
-    test_greedy_neighbor_descent()
+    #test_greedy_neighbor_descent()
     #test_graph_node_to_dict()
     #test_product_with_a_scalar_graph()
+    test_product_with_long_list()
 
     print('Remember, to run the full test suite run "py.test"!')
