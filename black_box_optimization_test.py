@@ -108,11 +108,13 @@ def test_exhaustive_search():
     assert stopPoint == optimum
 
 if __name__ == '__main__':
-    # By default, run whatever test I'm currently working on fixing up.
-    test_make_cartesian_product()
+    # By default, run an interesting test case
+    #test_make_cartesian_product()
     #test_flattening()
     #test_best_neighbor_descent()
     #test_exhaustive_search()
-    #test_greedy_neighbor_descent()
+    test_greedy_neighbor_descent()
     #test_graph_node_to_dict()
     #test_product_with_a_scalar_graph()
+
+    print('Remember, to run the full test suite run "py.test"!')
