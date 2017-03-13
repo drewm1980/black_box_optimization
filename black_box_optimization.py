@@ -8,7 +8,6 @@ Code for performing derivative free optimization when:
     * Your parameter space is not well modeled by a hypercube, i.e. subsets of your parameters live on a spherical manifold, torus, SO(3),etc... Graphs with dense samplings are a very expensive representations of high dimensional spaces, but are general enough to handle non-cartesian spaces cleanly.
 """
 import numpy
-import scipy
 import networkx
 import functools
 
