@@ -9,70 +9,70 @@ import functools
 from black_box_optimization import *
 
 def test_make_a_sequence():
-    g = sequence([1, 2, 3], 'foo')
+    g = sequence('foo', [1, 2, 3])
     assert len(g.nodes()) == 3
     assert g.name == 'foo'
 
 
 def test_make_a_cycle():
-    g = cycle([1, 2, 3], 'bar')
+    g = cycle('bar', [1, 2, 3])
     assert len(g.nodes()) == 3
     assert g.name == 'bar'
 
 
 def test_complete():
-    g = complete([1, 2, 3], 'baz')
+    g = complete('baz', [1, 2, 3])
     assert len(g.nodes()) == 3
     assert g.name == 'baz'
 
 
 def test_flattening():
-    xgrid = sequence([0], 'x')
-    ygrid = sequence([0], 'y')
-    zgrid = sequence([0], 'z')
+    xgrid = sequence('x', [0])
+    ygrid = sequence('y', [0])
+    zgrid = sequence('z', [0])
     graph = cartesian_product((xgrid, ygrid, zgrid))
     assert len(graph.nodes()) > 0, 'cartesian_product returned an empty graph!'
     assert (0, 0, 0) in graph.nodes()
 
 
 def test_make_cartesian_product():
-    foo = sequence([1, 3, 5], 'foo')
-    bar = sequence([2, 4, 6], 'bar')
+    foo = sequence('foo', [1, 3, 5])
+    bar = sequence('bar', [2, 4, 6])
     p = cartesian_product([foo, bar])
     assert p.number_of_nodes() == 9
     print(p.number_of_edges())
 
 def test_product_with_a_scalar_graph1():
-    foo = sequence([1, 3, 5], 'foo')
-    bar = sequence([2], 'bar')
+    foo = sequence('foo', [1, 3, 5])
+    bar = sequence('bar', [2])
     assert all((g.name != '' for g in [foo,bar]))
     p = cartesian_product([foo,bar])
     assert p.name == 'foo,bar'
 
 def test_product_with_a_scalar_graph2():
-    foo = sequence([1, 3, 5], 'foo')
-    bar = sequence([2], 'bar')
+    foo = sequence('foo', [1, 3, 5])
+    bar = sequence('bar', [2])
     p = cartesian_product([bar,foo])
     assert p.name == 'bar,foo'
 
 def test_product_with_a_scalar_graph3():
-    foo = sequence([1, 3, 5], 'foo')
-    bar = sequence([2], 'bar')
+    foo = sequence('foo', [1, 3, 5])
+    bar = sequence('bar', [2])
     p = strong_product([bar,foo])
     assert p.name == 'bar,foo'
 
 def test_product_with_more_than_two_graphs():
-    foo = sequence([1, 3], 'foo')
-    bar = sequence([2, 4], 'bar')
-    baz = sequence([10, 20], 'baz')
+    foo = sequence('foo', [1, 3])
+    bar = sequence('bar', [2, 4])
+    baz = sequence('baz', [10, 20])
     p = cartesian_product([foo, bar, baz])
     assert p.name == 'foo,bar,baz'
     assert (1,2,10) in p
 
 def test_product_with_mixed_types():
-    foo = sequence([1, 3], 'foo')
-    bar = sequence([2.0, 4.0], 'bar')
-    baz = sequence(['a', 'b'], 'baz')
+    foo = sequence('foo', [1, 3])
+    bar = sequence('bar', [2.0, 4.0])
+    baz = sequence('baz', ['a', 'b'])
     p = cartesian_product([foo, bar, baz])
     assert p.name == 'foo,bar,baz'
     assert (1,4.0,'a') in p
@@ -80,9 +80,9 @@ def test_product_with_mixed_types():
 
 
 def test_product_with_none():
-    foo = sequence([1, 3], 'foo')
-    bar = sequence([None], 'bar')
-    baz = sequence([2, 4], 'baz')
+    foo = sequence('foo', [1, 3])
+    bar = sequence('bar', [None])
+    baz = sequence('baz', [2, 4])
     p = cartesian_product([foo, bar, baz])
     assert p.name == 'foo,bar,baz'
     assert (1,None,2) in p
@@ -91,10 +91,10 @@ def test_product_with_none():
 
 def test_product_with_long_list():
     listLength = 8
-    l = [sequence([1,2],'foo')]*listLength
+    l = [sequence('foo', [1, 2])] * listLength
     p = cartesian_product(l)
     assert tuple([2]*listLength) in p
-    
+
 
 def toy_grid_search_problem():
     @functools.lru_cache(maxsize=None)
@@ -102,9 +102,9 @@ def toy_grid_search_problem():
         x,y,z = xyz
         return x * x + 3 * y * y + 4 * z * z
     w = 2 # half width 
-    xgrid = sequence(range(-w, w + 1), 'x')
-    ygrid = sequence(range(-w, w + 1), 'y')
-    zgrid = sequence(range(-w, w + 1), 'z')
+    xgrid = sequence('x', range(-w, w + 1))
+    ygrid = sequence('y', range(-w, w + 1))
+    zgrid = sequence('z', range(-w, w + 1))
     grid = cartesian_product((xgrid, ygrid, zgrid))
     seed = (w, w, w)
     optimum = (0,0,0)
@@ -112,19 +112,19 @@ def toy_grid_search_problem():
 
 
 def test_graph_node_to_dict():
-    grid,f,seed,optimum = toy_grid_search_problem()
+    grid, f, seed, optimum = toy_grid_search_problem()
     d = graph_node_to_dict(grid, seed)
-    assert d=={'x':seed[0],'y':seed[1],'z':seed[2]}
+    assert d == {'x': seed[0], 'y': seed[1], 'z': seed[2]}
 
 
 def test_best_neighbor_descent():
-    grid,f,seed,optimum = toy_grid_search_problem()
+    grid, f, seed, optimum = toy_grid_search_problem()
     stopPoint = best_neighbor_descent(grid, f, seed)
     assert stopPoint == optimum
 
 
 def test_greedy_neighbor_descent():
-    grid,f,seed,optimum = toy_grid_search_problem()
+    grid, f, seed, optimum = toy_grid_search_problem()
     stopPoint = greedy_neighbor_descent(grid, f, seed)
     assert stopPoint == optimum
 

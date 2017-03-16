@@ -39,7 +39,8 @@ def _complete_graph(parameterValues):
 
 def _wrap_graph_generator(f):
     # Wrap a graph generator with handling of trivial cases and names
-    def f_wrapped(parameterValues, parameterName):
+    def f_wrapped(parameterName, parameterValues):
+        assert type(parameterName) is str, "You probably need to swap argument order to (key,value_tuple)"
         l = list(parameterValues)
         assert len(l) > 0, "Empty graphs not supported!"
 
