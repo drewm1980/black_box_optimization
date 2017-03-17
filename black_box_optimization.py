@@ -15,6 +15,15 @@ from networkx import Graph
 
 parameterNameSeparator = ','
 
+try:
+    import colorama
+    from colorama import Fore, Back, Style
+    GREEN = Fore.GREEN
+    RED = Fore.RED
+    BLUE = Fore.BLUE
+    RESET = Style.RESET_ALL
+except:
+    GREEN=RED=BLUE=RESET=''
 
 def _sequence_graph(parameterValues):
     '''Convert a list of values to a graph that connects adgacent values'''
@@ -163,7 +172,7 @@ def best_neighbor_descent(graph, objective, seed=None):
         point = bestNeighbor  # Descend!
 
 
-def greedy_neighbor_descent(graph, objective, seed):
+def greedy_neighbor_descent(graph, objective, seed, pretty_print=None):
     '''
     Starting from a seed node, move to the first neighbor found that has a lower objective until a local minimum (or plateau) is reached. This is the special case of a beam search of width 1.
 
@@ -172,13 +181,19 @@ def greedy_neighbor_descent(graph, objective, seed):
     '''
     point = seed
     stillDescending = True
+    if pretty_print is None:
+        pretty_print = lambda point: print(_str(graph,point),end='')
     while (True):
         neighbors = networkx.all_neighbors(graph, point)
         currentValue = objective(point)
-        print('point:\t\t',_str(graph,point), '\tobjective=',currentValue)
+        print(BLUE,'Current point:\t\t\n',RESET,end='')
+        pretty_print(point) 
+        print('\tobjective=',currentValue)
         for neighbor in neighbors:
             value = objective(neighbor)
-            print('neighbor:\t',_str(graph,neighbor), '\tobjective=',value)
+            print('Visiting neighbor:\t\t',end='')
+            pretty_print(neighbor) 
+            print('objective=',value)
             if value < currentValue:
                 point = neighbor  # Descend!
                 stillDescending=True
@@ -186,6 +201,9 @@ def greedy_neighbor_descent(graph, objective, seed):
             else:
                 stillDescending=False
         if not stillDescending:
+            print(RED,'Final point:\t\t\n',RESET,end='')
+            pretty_print(point) 
+            print('\tobjective=',currentValue)
             return point
 
 
